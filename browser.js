@@ -33,6 +33,8 @@ let serverListWidget = dew.makeListWidget(document.querySelector('#server-list-w
 });
 serverListWidget.focus();
 
+dew.command('Game.HideChat 1');
+
 serverListWidget.on('select', function(e) {
     let server = e.element.dataset.ip;
     if(!server)
@@ -80,6 +82,7 @@ window.addEventListener("keydown", function(e) {
 
 dew.on('show', function() {
     visible = true;
+    dew.command('Game.HideChat 1');
     dew.command('Game.HideH3UI 1');
     dew.command('Settings.Gamepad').then((result) => {
         result = parseInt(result);
@@ -286,6 +289,11 @@ function ping(info) {
             let endTime = Date.now();
             let ping = Math.round((endTime - startTime) * .45);
             let officialStatus = officialServers[info.server];
+
+            if((data.numPlayers < 0 || data.numPlayers > 16) ||
+                (data.players && data.players.length !== data.numPlayers)) {
+                rejeect();
+            }
 
             resolve({
                 type: data.passworded ? 'private' : (officialStatus ? (officialStatus.ranked ? 'ranked' : 'social') : ''),
@@ -519,6 +527,9 @@ function render() {
 }
 
 function sanitize(str) {
+    if(!str)
+        return 'Blam!';
+
     if(str.length > 80)
         str = str.substr(0, 80) + '...';
 
